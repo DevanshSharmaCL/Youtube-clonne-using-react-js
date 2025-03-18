@@ -1,11 +1,11 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { getHomePageVideos } from '../../Store/reducers/getHomePageVideos';
+import { getHomePageVideos } from '../../Store/YoutubeActions'; // Adjust path based on your structure
 
 const initialState = {
-    videos: [],             // Renamed "video" to "videos" for clarity (optional)
+    videos: [],
     currentPlaying: null,
-    searchTerm: '',         // Fixed typo from "seacrhTerm"
-    searchResults: [],      // Renamed "searchResult" to "searchResults" (optional)
+    searchTerm: '',
+    searchResults: [],
     nextPageToken: null,
     recommendedVideos: [],
 };
@@ -14,7 +14,6 @@ const youtubeSlice = createSlice({
     name: 'youtube',
     initialState,
     reducers: {
-        // Example reducers for a YouTube clone
         setVideos: (state, action) => {
             state.videos = action.payload;
         },
@@ -34,10 +33,25 @@ const youtubeSlice = createSlice({
             state.recommendedVideos = action.payload;
         },
     },
-    extraReducers:(builder)=>{
-        builder.addCase(getHomePageVideos.fulfilled,(state,action)=>{
-            state.videos = action.payload
-    })
+    extraReducers: (builder) => {
+        builder
+            .addCase(getHomePageVideos.fulfilled, (state, action) => {
+                state.videos = action.payload.videos;
+                state.nextPageToken = action.payload.nextPageToken;
+            })
+            .addCase(getHomePageVideos.rejected, (state, action) => {
+                console.error("Failed to fetch homepage videos:", action.error.message);
+            });
+    },
 });
+
+export const { 
+    setVideos, 
+    setCurrentPlaying, 
+    setSearchTerm, 
+    setSearchResults, 
+    setNextPageToken, 
+    setRecommendedVideos 
+} = youtubeSlice.actions;
 
 export default youtubeSlice.reducer;

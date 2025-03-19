@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { getHomePageVideos } from '../../Store/YoutubeActions'; // Adjust path based on your structure
+import { getHomePageVideos } from '../../Store/reducers/getHomePageVideos'; // Path matches your structure
 
 const initialState = {
     videos: [],

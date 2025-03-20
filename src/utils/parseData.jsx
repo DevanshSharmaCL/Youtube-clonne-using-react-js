@@ -1,6 +1,7 @@
 import React from 'react'
 import axios from 'axios'
-
+import { parseVideoDuration } from './ParseVideoDuration'
+import { convertRawToString } from './convertRawToString'
 const API_KEY=ProcessingInstruction.env.REACT_APP_YOUTUBE_API_KEY
 
 const parseData = async(items) => {
@@ -40,19 +41,23 @@ const parseData = async(items) => {
           videoThumbnail:item.snippet.thumbnails.medium.url,
           videoLink:'https://www.youtube.com/watch?v='+item.id.videosId,
           videoDuration:parseVideoDuration(videosData[index].contantDetails.duration),
-          videosData{index}.satistics.viewCount,),
-          videoAge:timeSlice(new Data(item.snippet.publishedAT)),channelInfo:{
-            id.item.snippet.channelId,
-            image:channelImage,
-            name:item.snippet.channelTitle,
-          }
-        })
+          viewCount: videosData[index].statistics.viewCount,
+          videoAge: timeSlice(new Date(item.snippet.publishedAt)),
+          channelInfo: {
+            id: item.snippet.channelId,
+            image: channelImage,
+            name: item.snippet.channelTitle,
+          },
+        });
       }
-    })
+    });
+
+    return parseData;
   }
-  return (
-    <div>parseData</div>
-  )
+  catch(err){
+    console.log(err);
+  }
+   
 }
 
 export default parseData

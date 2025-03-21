@@ -1,63 +1,72 @@
-import React from 'react'
-import axios from 'axios'
-import { parseVideoDuration } from './ParseVideoDuration'
-import { convertRawToString } from './convertRawToString'
-const API_KEY=ProcessingInstruction.env.REACT_APP_YOUTUBE_API_KEY
+// src/utils/ParseData.jsx
+import axios from 'axios';
+import { parseVideoDuration } from './parseVideoDuration'; // Adjust case if needed
+import { convertRawToString } from './convertRawToString'; // Assuming this exists
+import { timeSince } from './timeSince'; // Import from separate file
 
-const parseData = async(items) => {
+const API_KEY = process.env.REACT_APP_YOUTUBE_API_KEY; // Fixed from ProcessingInstruction
 
-  try{
-    const videosId=[]
-    const channelIds=[]
+// src/utils/ParseData.jsx (snippet)
+const parseData = async (items) => {
+  try {
+      const videoIds = [];
+      const channelIds = [];
 
-    items.forEach((item)=>{
-      channelIds.push(item.snippet.channelId);
-      videosId.push(item.id.videosIds)
-    })
+      items.forEach((item) => {
+          channelIds.push(item.snippet.channelId);
+          videoIds.push(item.id.videoId); // Works with /search endpoint
+      });
+      // Rest of your code (fetching channel and video details) remains the same
 
-    const{
-      data:{item:channelsData}
-    } = await axios.get(`https://www.googleapis.com/youtube/v3/channels?part=snippet.contentDetails&id=&id=${channelIds.join(',')}&key=${API_KEY}`)
+        const {
+            data: { items: channelsData },
+        } = await axios.get(
+            `https://www.googleapis.com/youtube/v3/channels?part=snippet&id=${channelIds.join(',')}&key=${API_KEY}`
+        ); // Removed redundant &id=
 
-    const parsedChannelIsData=[];
-    channelsData.forEach((channel)=>parsedChannelIsData.push({
-      id:channel.id,
-      image:channel.snippet.thumbnails.dafault.url,
-    }));
+        const parsedChannelsData = []; // Fixed typo in variable name
+        channelsData.forEach((channel) =>
+            parsedChannelsData.push({
+                id: channel.id,
+                image: channel.snippet.thumbnails.default.url, // Fixed typo from dafault
+            })
+        );
 
-    const{
-      data:{items:videosData}
-    }=await axios.get(`https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${videosId.join(',')}&key=${API_KEY}`)
+        const {
+            data: { items: videosData },
+        } = await axios.get(
+            `https://www.googleapis.com/youtube/v3/videos?part=statistics,contentDetails&id=${videoIds.join(',')}&key=${API_KEY}`
+        ); // Added contentDetails for duration
 
-   
-    const parseData=[];
-    items.forEach((item,index)=>{
-      const {image:channelImage} = parsedChannelIsData.find((data)=>data.id===items.snippet.channelId);
-      if(channelImage){
-        parseData.push({
-          videosId:item.id.videosData,
-          videoTitle:item.snippet.title,
-          videoDescription:item.snippet.description,
-          videoThumbnail:item.snippet.thumbnails.medium.url,
-          videoLink:'https://www.youtube.com/watch?v='+item.id.videosId,
-          videoDuration:parseVideoDuration(videosData[index].contantDetails.duration),
-          viewCount: videosData[index].statistics.viewCount,
-          videoAge: timeSlice(new Date(item.snippet.publishedAt)),
-          channelInfo: {
-            id: item.snippet.channelId,
-            image: channelImage,
-            name: item.snippet.channelTitle,
-          },
+        const parsedData = [];
+        items.forEach((item, index) => {
+            const { image: channelImage } = parsedChannelsData.find(
+                (data) => data.id === item.snippet.channelId
+            ); // Fixed typo from items to item
+            if (channelImage) {
+                parsedData.push({
+                    videoId: item.id.videoId, // Fixed from videosId
+                    videoTitle: item.snippet.title,
+                    videoDescription: item.snippet.description,
+                    videoThumbnail: item.snippet.thumbnails.medium.url,
+                    videoLink: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+                    videoDuration: parseVideoDuration(videosData[index].contentDetails.duration), // Fixed typo from contantDetails
+                    viewCount: videosData[index].statistics.viewCount,
+                    videoAge: timeSince(new Date(item.snippet.publishedAt)), // Uses imported timeSince
+                    channelInfo: {
+                        id: item.snippet.channelId,
+                        image: channelImage,
+                        name: item.snippet.channelTitle,
+                    },
+                });
+            }
         });
-      }
-    });
 
-    return parseData;
-  }
-  catch(err){
-    console.log(err);
-  }
-   
-}
+        return parsedData;
+    } catch (err) {
+        console.error("Error parsing YouTube data:", err);
+        return []; // Added fallback return
+    }
+};
 
-export default parseData
+export default parseData;

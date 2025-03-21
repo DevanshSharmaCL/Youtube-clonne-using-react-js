@@ -1,38 +1,27 @@
+// src/Store/reducers/getHomePageVideos.jsx
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
-import ParseData from "../../utils/ParseData"; // Changed to default import
-import { timeSince } from "../../utils/timeSince";
+import parseData from "../../utils/ParseData";
 
 const API_KEY = process.env.REACT_APP_YOUTUBE_API_KEY;
+const CHANNEL_ID = "UCWv7vMbMWH4-V0ZXdmDpPBA"; // Mosh's channel ID
 
 export const getHomePageVideos = createAsyncThunk(
     "youtube/getHomePageVideos",
     async (isNext, { getState }) => {
         const {
-            youtube: { nextPageToken: nextPageTokenFromState, videos, searchTerm },
+            youtube: { nextPageToken: nextPageTokenFromState, videos },
         } = getState();
 
-        const query = searchTerm || "trending videos";
+        const response = await axios.get(
+            `https://youtube.googleapis.com/youtube/v3/search?part=snippet&channelId=${CHANNEL_ID}&maxResults=8&order=date&pageToken=${isNext ? nextPageTokenFromState : ""}&key=${API_KEY}`
+        );
+        const items = response.data.items;
+        const parsedVideos = await parseData(items);
 
-        const url = `https://www.googleapis.com/youtube/v3/search?maxResults=20&q=${encodeURIComponent(query)}&key=${API_KEY}&part=snippet&type=video${
-            isNext && nextPageTokenFromState ? `&pageToken=${nextPageTokenFromState}` : ""
-        }`;
-
-        try {
-            const {
-                data: { items, nextPageToken },
-            } = await axios.get(url);
-
-            const parsedVideos = ParseData(items); // Now correctly uses default import
-            const updatedVideos = isNext ? [...videos, ...parsedVideos] : parsedVideos;
-
-            return {
-                videos: updatedVideos,
-                nextPageToken,
-            };
-        } catch (error) {
-            console.error("Error fetching YouTube videos:", error);
-            throw error;
-        }
+        return {
+            videos: isNext ? [...videos, ...parsedVideos] : parsedVideos,
+            nextPageToken: response.data.nextPageToken || null,
+        };
     }
 );

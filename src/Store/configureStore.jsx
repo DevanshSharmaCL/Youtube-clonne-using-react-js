@@ -1,10 +1,10 @@
+// src/Store/configureStore.jsx
 import { configureStore } from '@reduxjs/toolkit';
-import YoutubeSlice from '../Features/Youtuber/YoutubeSlice';
+import youtubeReducer from '../Features/Youtuber/YoutubeSlice'; // Path matches your structure
 
-// Export the store with the correct reducer
 export const store = configureStore({
     reducer: {
-        youtube: YoutubeSlice.reducer, // Use the reducer from the YoutubeSlice
+        youtube: youtubeReducer, // Matches state.youtube
     },
 });
 

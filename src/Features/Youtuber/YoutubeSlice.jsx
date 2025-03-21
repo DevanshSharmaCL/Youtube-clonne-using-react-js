@@ -1,5 +1,6 @@
+// src/Features/Youtuber/YoutubeSlice.jsx
 import { createSlice } from '@reduxjs/toolkit';
-import { getHomePageVideos } from '../../Store/reducers/getHomePageVideos'; // Path matches your structure
+import { getHomePageVideos } from '../../Store/reducers/getHomePageVideos'; // Should work, but let’s verify
 
 const initialState = {
     videos: [],
@@ -34,14 +35,12 @@ const youtubeSlice = createSlice({
         },
     },
     extraReducers: (builder) => {
-        builder
-            .addCase(getHomePageVideos.fulfilled, (state, action) => {
+        builder.addCase(getHomePageVideos.fulfilled, (state, action) => {
+            if (action.payload && action.payload.videos) {
                 state.videos = action.payload.videos;
                 state.nextPageToken = action.payload.nextPageToken;
-            })
-            .addCase(getHomePageVideos.rejected, (state, action) => {
-                console.error("Failed to fetch homepage videos:", action.error.message);
-            });
+            }
+        });
     },
 });
 

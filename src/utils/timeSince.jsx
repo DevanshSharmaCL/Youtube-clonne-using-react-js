@@ -1,3 +1,31 @@
+// src/utils/timeSince.js
 export const timeSince = (date) => {
-    const second = Math.floor((new Date().valueOf() - data.valueOf()) / 1000);
-}
+    const seconds = Math.floor((new Date().valueOf() - date.valueOf()) / 1000); // Fixed typo from data to date
+    let interval = seconds / 31536000;
+
+    if (interval > 1) {
+        return Math.floor(interval) + " years";
+    }
+
+    interval = seconds / 2592000;
+    if (interval > 1) {
+        return Math.floor(interval) + " months";
+    }
+
+    interval = seconds / 86400;
+    if (interval > 1) {
+        return Math.floor(interval) + " days";
+    }
+
+    interval = seconds / 3600;
+    if (interval > 1) {
+        return Math.floor(interval) + " hours";
+    }
+
+    interval = seconds / 60;
+    if (interval > 1) {
+        return Math.floor(interval) + " minutes";
+    }
+
+    return Math.floor(seconds) + " seconds";
+};

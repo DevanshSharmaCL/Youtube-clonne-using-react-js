@@ -9,7 +9,7 @@ const initialState = {
     searchResults: [],
     nextPageToken: null,
     recommendedVideos: [],
-};
+};;;;;
 
 const youtubeSlice = createSlice({
     name: 'youtube',

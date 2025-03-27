@@ -5,7 +5,7 @@ import { getHomePageVideos } from '../../Store/reducers/getHomePageVideos'; // S
 const initialState = {
     videos: [],
     currentPlaying: null,
-    searchTerm: '',,
+    searchTerm: '',
     searchResults: [],
     nextPageToken: null,
     recommendedVideos: [],
